@@ -131,9 +131,9 @@ export default function Goals() {
                         <span className="text-xs text-[var(--color-text-muted)] flex items-center gap-0.5">
                           <Calendar size={10} /> {goal.targetDate}
                         </span>
-                        {!isComplete && goal.monthlyContribution > 0 && (
+                        {!isComplete && requiredMonthly > 0 && (
                           <span className="text-xs text-[var(--color-text-muted)] flex items-center gap-0.5">
-                            <TrendingUp size={10} /> {formatCurrency(goal.monthlyContribution, settings.currency)}/mo
+                            <TrendingUp size={10} /> {formatCurrency(requiredMonthly, settings.currency)}/mo needed
                           </span>
                         )}
                       </div>

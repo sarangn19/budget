@@ -3,21 +3,44 @@ import { AppLayout, PageHeader } from '../components/layout/AppLayout';
 import { Card, CardHeader } from '../components/ui/Card';
 import { Tabs } from '../components/ui/Tabs';
 import { AmountDisplay } from '../components/ui/AmountDisplay';
-import { ProgressBar } from '../components/ui/ProgressBar';
 import { EmptyState } from '../components/ui/EmptyState';
+import { CashFlowTimeline } from '../components/charts/CashFlowTimeline';
 import useStore from '../store/useStore';
 import {
   getSpendingByCategory,
   getMonthlySpendingHistory,
+  getCashFlowTimeline,
+  getSpendingInsights,
   calculateMonthlyIncome,
   calculateMonthlyExpenses,
   calculateNetCashFlow,
 } from '../utils/calculations';
 import { getMonthKey, getMonthLabel, getStartOfMonth } from '../utils/helpers';
-import { BarChart3, TrendingUp, TrendingDown, PieChart } from 'lucide-react';
+import {
+  BarChart3,
+  TrendingUp,
+  TrendingDown,
+  PieChart,
+  Activity,
+  Lightbulb,
+  TrendingUp as TrendingUpIcon,
+  PiggyBank,
+  Target,
+  AlertTriangle,
+  CheckCircle,
+} from 'lucide-react';
+
+const insightIcons: Record<string, React.ReactNode> = {
+  TrendingUp: <TrendingUpIcon size={16} className="text-[var(--color-warning)]" />,
+  TrendingDown: <TrendingDown size={16} className="text-[var(--color-success)]" />,
+  PiggyBank: <PiggyBank size={16} className="text-[var(--color-accent)]" />,
+  Target: <Target size={16} className="text-[var(--color-success)]" />,
+  AlertTriangle: <AlertTriangle size={16} className="text-[var(--color-danger)]" />,
+  CheckCircle: <CheckCircle size={16} className="text-[var(--color-success)]" />,
+};
 
 export default function Reports() {
-  const { transactions, categories, settings } = useStore();
+  const { transactions, categories, settings, debts, goals, accounts } = useStore();
   const [activeTab, setActiveTab] = useState('spending');
 
   const monthKey = getMonthKey();
@@ -25,6 +48,11 @@ export default function Reports() {
 
   const spendingByCategory = useMemo(() => getSpendingByCategory(transactions, getStartOfMonth()), [transactions]);
   const monthlyHistory = useMemo(() => getMonthlySpendingHistory(transactions, 6), [transactions]);
+  const cashFlowTimeline = useMemo(() => getCashFlowTimeline(transactions, accounts, 6), [transactions, accounts]);
+  const insights = useMemo(
+    () => getSpendingInsights(transactions, debts, goals, accounts, settings.safetyBuffer),
+    [transactions, debts, goals, accounts, settings.safetyBuffer]
+  );
 
   const monthlyIncome = calculateMonthlyIncome(transactions, getStartOfMonth());
   const monthlyExpenses = calculateMonthlyExpenses(transactions, getStartOfMonth());
@@ -38,7 +66,8 @@ export default function Reports() {
   const tabs = [
     { id: 'spending', label: 'Spending', icon: <PieChart size={14} /> },
     { id: 'trend', label: 'Trend', icon: <TrendingUp size={14} /> },
-    { id: 'income', label: 'Income', icon: <TrendingDown size={14} /> },
+    { id: 'timeline', label: 'Timeline', icon: <Activity size={14} /> },
+    { id: 'insights', label: 'Insights', icon: <Lightbulb size={14} /> },
   ];
 
   return (
@@ -146,25 +175,53 @@ export default function Reports() {
           </>
         )}
 
-        {/* Income Summary */}
-        {activeTab === 'income' && (
-          <Card padding="md">
-            <CardHeader title="Income Summary" subtitle={`${monthLabel}`} />
-            <div className="space-y-4">
-              <div className="flex justify-between items-center py-2 border-b border-[var(--color-border-light)]">
-                <span className="text-sm text-[var(--color-text-secondary)]">Monthly Income</span>
-                <AmountDisplay amount={monthlyIncome} currency={settings.currency} size="md" colorize />
+        {/* Cash Flow Timeline */}
+        {activeTab === 'timeline' && (
+          <>
+            {cashFlowTimeline.some((m) => m.income > 0 || m.expenses > 0) ? (
+              <CashFlowTimeline data={cashFlowTimeline} currency={settings.currency} />
+            ) : (
+              <EmptyState
+                icon={<Activity size={28} />}
+                title="No timeline data"
+                description="Add transactions to see your cash flow timeline."
+              />
+            )}
+          </>
+        )}
+
+        {/* Insights */}
+        {activeTab === 'insights' && (
+          <>
+            {insights.length > 0 ? (
+              <div className="space-y-3">
+                <Card padding="md">
+                  <CardHeader title="Financial Insights" subtitle="Based on your recent activity" />
+                </Card>
+                {insights.map((insight) => (
+                  <Card key={insight.id} padding="md">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-[var(--color-surface-dim)] flex items-center justify-center mt-0.5 shrink-0">
+                        {insightIcons[insight.icon] || <Lightbulb size={16} className="text-[var(--color-text-muted)]" />}
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-sm font-semibold block">{insight.title}</span>
+                        <span className="text-xs text-[var(--color-text-muted)] leading-relaxed block mt-0.5">
+                          {insight.description}
+                        </span>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-[var(--color-border-light)]">
-                <span className="text-sm text-[var(--color-text-secondary)]">Monthly Expenses</span>
-                <AmountDisplay amount={monthlyExpenses} currency={settings.currency} size="md" colorize />
-              </div>
-              <div className="flex justify-between items-center py-2">
-                <span className="text-sm font-medium">Net Cash Flow</span>
-                <AmountDisplay amount={cashFlow} currency={settings.currency} size="md" colorize />
-              </div>
-            </div>
-          </Card>
+            ) : (
+              <EmptyState
+                icon={<Lightbulb size={28} />}
+                title="No insights yet"
+                description="Add more transactions to get personalized financial insights."
+              />
+            )}
+          </>
         )}
       </div>
     </AppLayout>

@@ -148,4 +148,6 @@ export interface AppSettings {
   currency: Currency;
   safetyBuffer: number;
   dateFormat: string;
+  salaryDay: number;
+  hasOnboarded: boolean;
 }

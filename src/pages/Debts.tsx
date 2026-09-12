@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { AppLayout, PageHeader } from '../components/layout/AppLayout';
-import { Card, CardHeader } from '../components/ui/Card';
+import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
 import { AmountDisplay } from '../components/ui/AmountDisplay';
 import { ProgressBar } from '../components/ui/ProgressBar';
 import { EmptyState } from '../components/ui/EmptyState';
-import { Tabs } from '../components/ui/Tabs';
 import useStore from '../store/useStore';
 import {
   calculateTotalDebt,
@@ -18,10 +17,8 @@ import { formatCurrency, getToday } from '../utils/helpers';
 import {
   Plus,
   CreditCard,
-  CheckCircle2,
   Clock,
   DollarSign,
-  TrendingDown,
   ChevronDown,
   ChevronUp,
   Trash2,

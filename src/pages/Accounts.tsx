@@ -9,6 +9,7 @@ import { AmountDisplay } from '../components/ui/AmountDisplay';
 import { EmptyState } from '../components/ui/EmptyState';
 import useStore from '../store/useStore';
 import { calculateAccountBalance } from '../utils/calculations';
+import { getToday } from '../utils/helpers';
 import type { AccountType } from '../types';
 import {
   Plus,
@@ -20,6 +21,7 @@ import {
   MoreVertical,
   Pencil,
   Trash2,
+  SlidersHorizontal,
 } from 'lucide-react';
 
 const accountTypeIcons: Record<AccountType, React.ReactNode> = {
@@ -39,11 +41,13 @@ const accountTypeLabels: Record<AccountType, string> = {
 };
 
 export default function Accounts() {
-  const { accounts, transactions, settings, addAccount, updateAccount, deleteAccount } = useStore();
+  const { accounts, transactions, settings, addAccount, updateAccount, deleteAccount, addTransaction, categories } = useStore();
 
   const [showAdd, setShowAdd] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showMenu, setShowMenu] = useState<string | null>(null);
+  const [adjustAccountId, setAdjustAccountId] = useState<string | null>(null);
+  const [adjustNewBalance, setAdjustNewBalance] = useState('');
 
   // Form state
   const [name, setName] = useState('');
@@ -85,6 +89,40 @@ export default function Accounts() {
   const handleDelete = (id: string) => {
     deleteAccount(id);
     setShowMenu(null);
+  };
+
+  const handleAdjustBalance = () => {
+    if (!adjustAccountId) return;
+    const account = accounts.find((a) => a.id === adjustAccountId);
+    if (!account) return;
+
+    const currentBalance = calculateAccountBalance(account, transactions);
+    const newBalance = parseFloat(adjustNewBalance) || 0;
+    const diff = newBalance - currentBalance;
+
+    if (diff === 0) {
+      setAdjustAccountId(null);
+      setAdjustNewBalance('');
+      return;
+    }
+
+    // Find or create an adjustment category
+    const adjustmentCategory = categories.find((c) => c.name === 'Adjustment' && c.type === (diff > 0 ? 'income' : 'expense'));
+
+    if (adjustmentCategory) {
+      addTransaction({
+        amount: Math.abs(diff),
+        type: diff > 0 ? 'income' : 'expense',
+        categoryId: adjustmentCategory.id,
+        accountId: adjustAccountId,
+        date: getToday(),
+        note: 'Balance adjustment',
+        isRecurring: false,
+      });
+    }
+
+    setAdjustAccountId(null);
+    setAdjustNewBalance('');
   };
 
   const totalBalance = accounts.reduce(
@@ -138,12 +176,22 @@ export default function Accounts() {
                           {showMenu === account.id && (
                             <>
                               <div className="fixed inset-0 z-40" onClick={() => setShowMenu(null)} />
-                              <div className="absolute right-0 top-8 z-50 bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] shadow-lg min-w-[120px] animate-scaleIn">
+                              <div className="absolute right-0 top-8 z-50 bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] shadow-lg min-w-[140px] animate-scaleIn">
                                 <button
                                   onClick={() => handleEdit(account.id)}
                                   className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[var(--color-surface-dim)] first:rounded-t-xl"
                                 >
                                   <Pencil size={14} /> Edit
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setAdjustAccountId(account.id);
+                                    setAdjustNewBalance(balance.toString());
+                                    setShowMenu(null);
+                                  }}
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[var(--color-surface-dim)]"
+                                >
+                                  <SlidersHorizontal size={14} /> Adjust Balance
                                 </button>
                                 <button
                                   onClick={() => handleDelete(account.id)}
@@ -223,6 +271,31 @@ export default function Accounts() {
           />
           <Button fullWidth onClick={editingId ? handleUpdate : handleAdd} disabled={!name}>
             {editingId ? 'Update Account' : 'Add Account'}
+          </Button>
+        </div>
+      </Modal>
+
+      {/* Adjust Balance Modal */}
+      <Modal
+        isOpen={!!adjustAccountId}
+        onClose={() => { setAdjustAccountId(null); setAdjustNewBalance(''); }}
+        title="Adjust Balance"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-[var(--color-text-secondary)]">
+            Set the correct balance for this account. A correction transaction will be created.
+          </p>
+          <Input
+            label="New Balance"
+            type="number"
+            placeholder="0"
+            value={adjustNewBalance}
+            onChange={(e) => setAdjustNewBalance(e.target.value)}
+            autoFocus
+          />
+          <Button fullWidth onClick={handleAdjustBalance}>
+            Update Balance
           </Button>
         </div>
       </Modal>

@@ -14,7 +14,7 @@ export function AppLayout({ children, header }: AppLayoutProps) {
           {header}
         </header>
       )}
-      <main className="max-w-lg mx-auto pb-28 px-1">{children}</main>
+      <main className="max-w-lg mx-auto pb-28">{children}</main>
       <BottomNav />
     </div>
   );

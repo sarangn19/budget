@@ -1,5 +1,4 @@
-import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { AppLayout, PageHeader } from '../components/layout/AppLayout';
 import { Card, CardHeader } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -16,20 +15,13 @@ import {
 } from '../utils/calculations';
 import { formatCurrency, getMonthKey, getMonthLabel, getStartOfMonth } from '../utils/helpers';
 import {
-  BarChart3,
   Shield,
-  TrendingUp,
-  TrendingDown,
-  Wallet,
-  CreditCard,
-  PiggyBank,
   AlertTriangle,
   CheckCircle2,
   Info,
 } from 'lucide-react';
 
 export default function Plan() {
-  const navigate = useNavigate();
   const {
     accounts,
     transactions,

@@ -94,6 +94,8 @@ const useStore = create<AppState>()(
         currency: 'INR' as Currency,
         safetyBuffer: DEFAULT_SAFETY_BUFFER,
         dateFormat: 'dd MMM yyyy',
+        salaryDay: 1,
+        hasOnboarded: false,
       },
       updateSettings: (updates) =>
         set((state) => ({ settings: { ...state.settings, ...updates } })),
@@ -123,7 +125,9 @@ const useStore = create<AppState>()(
       deleteAccount: (id) =>
         set((state) => ({
           accounts: state.accounts.filter((a) => a.id !== id),
-          transactions: state.transactions.filter((t) => t.accountId !== id),
+          transactions: state.transactions.filter(
+            (t) => t.accountId !== id && t.toAccountId !== id
+          ),
         })),
 
       // Categories

@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import { AppLayout, PageHeader } from '../components/layout/AppLayout';
-import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
@@ -9,12 +8,11 @@ import { AmountDisplay } from '../components/ui/AmountDisplay';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Tabs } from '../components/ui/Tabs';
 import useStore from '../store/useStore';
-import { formatDate, formatCurrency, getToday, getStartOfMonth, getEndOfMonth } from '../utils/helpers';
-import type { TransactionType, FilterOptions } from '../types';
+import { formatDate, getToday } from '../utils/helpers';
+import type { TransactionType } from '../types';
 import {
   Plus,
   Search,
-  Filter,
   ArrowUpRight,
   ArrowDownRight,
   ArrowLeftRight,

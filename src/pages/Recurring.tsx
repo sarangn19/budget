@@ -8,12 +8,11 @@ import { Select } from '../components/ui/Select';
 import { AmountDisplay } from '../components/ui/AmountDisplay';
 import { EmptyState } from '../components/ui/EmptyState';
 import useStore from '../store/useStore';
-import { formatCurrency, getToday } from '../utils/helpers';
+import { getToday } from '../utils/helpers';
 import type { TransactionType, RecurrenceFrequency } from '../types';
 import {
   Plus,
   RefreshCw,
-  Calendar,
   Trash2,
   Pause,
   Play,
@@ -101,7 +100,6 @@ export default function Recurring() {
           <div className="space-y-3">
             {recurringTransactions.map((recurring) => {
               const category = categories.find((c) => c.id === recurring.categoryId);
-              const account = accounts.find((a) => a.id === recurring.accountId);
 
               return (
                 <Card key={recurring.id} padding="md">

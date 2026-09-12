@@ -10,6 +10,7 @@ import { Modal } from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { EmptyState } from '../components/ui/EmptyState';
+import Onboarding from '../components/Onboarding';
 import useStore from '../store/useStore';
 import {
   calculateTotalBalance,
@@ -21,6 +22,8 @@ import {
   calculateSavingsProgress,
   getUpcomingDebts,
   getMonthlyCashFlow,
+  getSpendingInsights,
+  getDaysUntilSalary,
 } from '../utils/calculations';
 import { formatCurrency, getMonthKey, getMonthLabel, getToday } from '../utils/helpers';
 import { getStartOfMonth } from '../utils/helpers';
@@ -37,7 +40,26 @@ import {
   Shield,
   Landmark,
   Banknote,
+  Settings,
+  BarChart3,
+  RefreshCw,
+  Clock,
+  TrendingUp as TrendingUpIcon,
+  PiggyBank,
+  AlertTriangle,
+  CheckCircle,
+  Lightbulb,
 } from 'lucide-react';
+import type { SpendingInsight } from '../utils/calculations';
+
+const insightIcons: Record<string, React.ReactNode> = {
+  TrendingUp: <TrendingUpIcon size={16} className="text-[var(--color-warning)]" />,
+  TrendingDown: <TrendingDown size={16} className="text-[var(--color-success)]" />,
+  PiggyBank: <PiggyBank size={16} className="text-[var(--color-accent)]" />,
+  Target: <Target size={16} className="text-[var(--color-success)]" />,
+  AlertTriangle: <AlertTriangle size={16} className="text-[var(--color-danger)]" />,
+  CheckCircle: <CheckCircle size={16} className="text-[var(--color-success)]" />,
+};
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -50,6 +72,7 @@ export default function Dashboard() {
     categories,
     addTransaction,
     addAccount,
+    updateSettings,
   } = useStore();
 
   const [showQuickAdd, setShowQuickAdd] = useState(false);
@@ -77,8 +100,11 @@ export default function Dashboard() {
   const savingsProgress = calculateSavingsProgress(goals);
   const upcomingDebts = getUpcomingDebts(debts, 7);
   const cashFlow = getMonthlyCashFlow(transactions, getStartOfMonth());
+  const insights = getSpendingInsights(transactions, debts, goals, accounts, settings.safetyBuffer);
+  const daysUntilSalary = getDaysUntilSalary(settings.salaryDay);
 
   const expenseCategories = categories.filter((c) => c.type === 'expense');
+  const incomeCategories = categories.filter((c) => c.type === 'income');
 
   const handleQuickAdd = () => {
     if (!quickAmount || !quickCategoryId || !quickAccountId) return;
@@ -104,6 +130,11 @@ export default function Dashboard() {
     setShowAddAccount(false);
   };
 
+  // Onboarding gate
+  if (!settings.hasOnboarded) {
+    return <Onboarding onComplete={() => updateSettings({ hasOnboarded: true })} />;
+  }
+
   return (
     <AppLayout
       header={
@@ -111,20 +142,33 @@ export default function Dashboard() {
           title="Budget Planner"
           subtitle={getMonthLabel(monthKey)}
           action={
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setShowQuickAdd(true)}
-            >
-              <Plus size={16} /> Add
-            </Button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => navigate('/settings')}
+                className="p-2 rounded-xl hover:bg-[var(--color-surface-dim)] active:scale-95 transition-all"
+                aria-label="Settings"
+              >
+                <Settings size={18} className="text-[var(--color-text-secondary)]" />
+              </button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setShowQuickAdd(true)}
+              >
+                <Plus size={16} /> Add
+              </Button>
+            </div>
           }
         />
       }
     >
       <div className="px-4 space-y-4 animate-fadeIn">
         {/* Balance Card */}
-        <Card className="bg-gradient-to-br from-[#1e293b] to-[#334155] text-white border-0" padding="lg">
+        <Card
+          className="bg-gradient-to-br from-[#1e293b] to-[#334155] text-white border-0 cursor-pointer active:scale-[0.98] transition-all"
+          padding="lg"
+          onClick={() => navigate('/accounts')}
+        >
           <div className="flex items-center justify-between mb-1">
             <span className="text-sm text-white/70 font-medium">Total Balance</span>
             <Wallet size={18} className="text-white/50" />
@@ -142,6 +186,27 @@ export default function Dashboard() {
             )}
           </div>
         </Card>
+
+        {/* Salary Day Indicator */}
+        {settings.salaryDay > 0 && (
+          <Card className="bg-[var(--color-accent)]/5 border-[var(--color-accent)]/20" padding="md">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[var(--color-accent)]/10 flex items-center justify-center">
+                <Clock size={18} className="text-[var(--color-accent)]" />
+              </div>
+              <div>
+                <span className="text-sm font-semibold block">
+                  {daysUntilSalary === 0 ? 'Salary day!' : `Salary in ${daysUntilSalary} days`}
+                </span>
+                <span className="text-xs text-[var(--color-text-muted)]">
+                  {daysUntilSalary === 0
+                    ? 'Expecting your salary today'
+                    : `Day ${settings.salaryDay} of every month`}
+                </span>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Safe to Spend */}
         <Card className="border-[var(--color-accent)]/20 bg-[var(--color-accent)]/5" padding="lg">
@@ -174,10 +239,55 @@ export default function Dashboard() {
           />
           <StatCard
             label="Savings"
-            value={<span className="text-xl font-bold">{Math.round(savingsProgress)}%</span>}
+            value={<span className="text-lg font-bold">{Math.round(savingsProgress)}%</span>}
             icon={<Target size={16} className="text-[var(--color-accent)]" />}
           />
         </div>
+
+        {/* Quick Links */}
+        <div className="flex gap-3">
+          <button
+            onClick={() => navigate('/reports')}
+            className="flex-1 flex items-center gap-2 bg-[var(--color-surface)] rounded-xl p-3 border border-[var(--color-border-light)] active:scale-[0.98] transition-all"
+          >
+            <BarChart3 size={16} className="text-[var(--color-accent)]" />
+            <span className="text-xs font-medium">Reports</span>
+          </button>
+          <button
+            onClick={() => navigate('/recurring')}
+            className="flex-1 flex items-center gap-2 bg-[var(--color-surface)] rounded-xl p-3 border border-[var(--color-border-light)] active:scale-[0.98] transition-all"
+          >
+            <RefreshCw size={16} className="text-[var(--color-success)]" />
+            <span className="text-xs font-medium">Recurring</span>
+          </button>
+        </div>
+
+        {/* Insights */}
+        {insights.length > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Lightbulb size={16} className="text-[var(--color-warning)]" />
+              <span className="text-sm font-semibold">Insights</span>
+            </div>
+            <div className="space-y-2">
+              {insights.map((insight) => (
+                <Card key={insight.id} padding="sm">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-[var(--color-surface-dim)] flex items-center justify-center mt-0.5 shrink-0">
+                      {insightIcons[insight.icon] || <Lightbulb size={16} className="text-[var(--color-text-muted)]" />}
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-sm font-semibold block">{insight.title}</span>
+                      <span className="text-xs text-[var(--color-text-muted)] leading-relaxed block">
+                        {insight.description}
+                      </span>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Debt Progress */}
         {debts.length > 0 && (
@@ -195,7 +305,7 @@ export default function Dashboard() {
               color="success"
               size="lg"
               showLabel
-              label={`${formatCurrency(calculateTotalDebt(debts) - debts.reduce((s, d) => s + (d.originalAmount - d.currentAmount), 0), settings.currency)} remaining`}
+              label={`${formatCurrency(totalDebt, settings.currency)} remaining`}
             />
           </Card>
         )}
@@ -281,7 +391,7 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Add Transaction Modal */}
-      <Modal isOpen={showQuickAdd} onClose={() => setShowQuickAdd(false)} title="Quick Add Transaction" size="sm">
+      <Modal isOpen={showQuickAdd} onClose={() => { setShowQuickAdd(false); setQuickAmount(''); setQuickNote(''); setQuickCategoryId(''); setQuickAccountId(''); }} title="Quick Add Transaction" size="sm">
         <div className="space-y-4">
           <div className="flex gap-2">
             <Button
@@ -315,7 +425,11 @@ export default function Dashboard() {
             label="Category"
             value={quickCategoryId}
             onChange={(e) => setQuickCategoryId(e.target.value)}
-            options={expenseCategories.map((c) => ({ value: c.id, label: c.name }))}
+            options={
+              quickType === 'income'
+                ? incomeCategories.map((c) => ({ value: c.id, label: c.name }))
+                : expenseCategories.map((c) => ({ value: c.id, label: c.name }))
+            }
             placeholder="Select category"
           />
 
@@ -345,7 +459,7 @@ export default function Dashboard() {
       </Modal>
 
       {/* Add Account Modal */}
-      <Modal isOpen={showAddAccount} onClose={() => setShowAddAccount(false)} title="Add Account" size="sm">
+      <Modal isOpen={showAddAccount} onClose={() => { setShowAddAccount(false); setAccountName(''); setAccountBalance(''); }} title="Add Account" size="sm">
         <div className="space-y-4">
           <Input
             label="Account Name"
