@@ -143,7 +143,7 @@ export default function Accounts() {
         />
       }
     >
-      <div className="px-4 space-y-4 animate-fadeIn">
+      <div className="px-5 space-y-5 animate-fadeIn">
         {/* Total Balance */}
         <Card className="bg-gradient-to-br from-[#1e293b] to-[#334155] text-white border-0" padding="lg">
           <div className="flex items-center justify-between mb-1">

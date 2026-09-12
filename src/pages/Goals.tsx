@@ -107,7 +107,7 @@ export default function Goals() {
         />
       }
     >
-      <div className="px-4 space-y-4 animate-fadeIn">
+      <div className="px-5 space-y-5 animate-fadeIn">
         {goals.length > 0 ? (
           <div className="space-y-3">
             {goals.map((goal) => {

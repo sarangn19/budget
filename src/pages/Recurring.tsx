@@ -95,7 +95,7 @@ export default function Recurring() {
         />
       }
     >
-      <div className="px-4 space-y-4 animate-fadeIn">
+      <div className="px-5 space-y-5 animate-fadeIn">
         {recurringTransactions.length > 0 ? (
           <div className="space-y-3">
             {recurringTransactions.map((recurring) => {

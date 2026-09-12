@@ -101,7 +101,7 @@ export default function Plan() {
         />
       }
     >
-      <div className="px-4 space-y-4 animate-fadeIn">
+      <div className="px-5 space-y-5 animate-fadeIn">
         {/* Status Banner */}
         <Card
           className={

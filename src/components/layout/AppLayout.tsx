@@ -14,7 +14,7 @@ export function AppLayout({ children, header }: AppLayoutProps) {
           {header}
         </header>
       )}
-      <main className="max-w-lg mx-auto pb-28">{children}</main>
+      <main className="max-w-lg mx-auto pb-28 pt-2">{children}</main>
       <BottomNav />
     </div>
   );
@@ -28,7 +28,7 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, subtitle, action }: PageHeaderProps) {
   return (
-    <div className="px-4 py-3 flex items-center justify-between safe-top">
+    <div className="px-5 py-4 flex items-center justify-between safe-top">
       <div>
         <h1 className="text-lg font-bold text-[var(--color-text)]">{title}</h1>
         {subtitle && (

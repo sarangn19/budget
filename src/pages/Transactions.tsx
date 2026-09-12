@@ -130,7 +130,7 @@ export default function Transactions() {
         />
       }
     >
-      <div className="px-4 space-y-4 animate-fadeIn">
+      <div className="px-5 space-y-5 animate-fadeIn">
         {/* Search */}
         <div className="relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />

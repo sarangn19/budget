@@ -74,7 +74,7 @@ export default function Reports() {
     <AppLayout
       header={<PageHeader title="Reports" subtitle={monthLabel} />}
     >
-      <div className="px-4 space-y-4 animate-fadeIn">
+      <div className="px-5 space-y-5 animate-fadeIn">
         <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
 
         {/* Spending by Category */}

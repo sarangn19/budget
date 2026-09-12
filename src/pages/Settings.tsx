@@ -46,7 +46,7 @@ export default function Settings() {
 
   return (
     <AppLayout header={<PageHeader title="Settings" />}>
-      <div className="px-4 space-y-4 animate-fadeIn">
+      <div className="px-5 space-y-5 animate-fadeIn">
         {/* Currency */}
         <Card padding="md" onClick={() => setShowCurrencyModal(true)}>
           <div className="flex items-center gap-3">

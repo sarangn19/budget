@@ -162,7 +162,7 @@ export default function Dashboard() {
         />
       }
     >
-      <div className="px-4 space-y-4 animate-fadeIn">
+      <div className="px-5 space-y-5 animate-fadeIn">
         {/* Balance Card */}
         <Card
           className="bg-gradient-to-br from-[#1e293b] to-[#334155] text-white border-0 cursor-pointer active:scale-[0.98] transition-all"
@@ -221,7 +221,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           <StatCard
             label="Income"
             value={<AmountDisplay amount={monthlyIncome} currency={settings.currency} size="md" />}
@@ -245,7 +245,7 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Links */}
-        <div className="flex gap-3">
+        <div className="flex gap-4">
           <button
             onClick={() => navigate('/reports')}
             className="flex-1 flex items-center gap-2 bg-[var(--color-surface)] rounded-xl p-3 border border-[var(--color-border-light)] active:scale-[0.98] transition-all"
