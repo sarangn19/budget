@@ -101,7 +101,7 @@ export default function Dashboard() {
   const upcomingDebts = getUpcomingDebts(debts, 7);
   const cashFlow = getMonthlyCashFlow(transactions, getStartOfMonth());
   const insights = getSpendingInsights(transactions, debts, goals, accounts, settings.safetyBuffer);
-  const daysUntilSalary = getDaysUntilSalary(settings.salaryDay);
+  const daysUntilSalary = settings.salaryDay ? getDaysUntilSalary(settings.salaryDay) : null;
 
   const expenseCategories = categories.filter((c) => c.type === 'expense');
   const incomeCategories = categories.filter((c) => c.type === 'income');
@@ -188,7 +188,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Salary Day Indicator */}
-        {settings.salaryDay > 0 && (
+        {settings.salaryDay > 0 && daysUntilSalary !== null && (
           <Card className="bg-[var(--color-accent)]/5 border-[var(--color-accent)]/20" padding="md">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-[var(--color-accent)]/10 flex items-center justify-center">

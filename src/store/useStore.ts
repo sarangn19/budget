@@ -400,6 +400,21 @@ const useStore = create<AppState>()(
     }),
     {
       name: 'budget-planner-storage',
+      merge: (persisted: unknown, current: AppState) => {
+        const stored = (persisted as Record<string, unknown>) || {};
+        const settings = current.settings;
+        const storedSettings = (stored.settings as Record<string, unknown>) || {};
+        return {
+          ...current,
+          ...stored,
+          settings: {
+            ...settings,
+            ...storedSettings,
+            salaryDay: typeof storedSettings.salaryDay === 'number' ? storedSettings.salaryDay : settings.salaryDay,
+            hasOnboarded: typeof storedSettings.hasOnboarded === 'boolean' ? storedSettings.hasOnboarded : settings.hasOnboarded,
+          },
+        };
+      },
     }
   )
 );
